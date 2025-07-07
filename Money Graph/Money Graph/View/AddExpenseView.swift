@@ -6,48 +6,67 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct AddExpenseView: View {
-    
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+
+    @StateObject private var viewModel: AddExpenseViewModel
+
+    @State private var isPickerPresented = false
     
-    @State private var cardName = ""
-    @State private var bankName = ""
-    
+    init(modelContext: ModelContext) {
+        _viewModel = StateObject(wrappedValue: AddExpenseViewModel(modelContext: modelContext))
+    }
+
     var body: some View {
         NavigationStack {
             VStack {
                 Form {
-                    Section(header: Text("")) {
-                        TextField("Card Name", text: $cardName)
-                        TextField("Bank Name", text: $bankName)
+                    Section {
+                        TextField("Card Name", text: $viewModel.cardName)
+                        TextField("Bank Name", text: $viewModel.bankName)
                     }
                 }
-                
+
                 HStack(spacing: 16) {
-                    Button(action: {}) {
-                        Image(systemName: "document.badge.plus")
+                    Button {
+                        isPickerPresented = true
+                    } label: {
+                        Image(systemName: "doc.badge.plus")
                             .font(.system(size: 24))
                             .frame(width: 50, height: 50)
                             .background(Color.green)
                             .foregroundColor(.white)
                             .cornerRadius(12)
                     }
-                    Text("Upload Statement")
-                        .font(.headline)
+
+                    if let url = viewModel.selectedPDFURL {
+                        Text(url.lastPathComponent)
+                    } else {
+                        Text("Upload Statement")
+                    }
                 }
+                .padding()
             }
             .navigationTitle("Add Statement")
-            .toolbar{
+            .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
+                    Button("Cancel") { dismiss() }
                 }
+
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Add") {
-                        
+                        viewModel.saveStatement()
+                        dismiss()
                     }
+                    .disabled(!viewModel.isFormValid)
+                }
+            }
+            .sheet(isPresented: $isPickerPresented) {
+                DocumentPickerView { url in
+                    viewModel.selectedPDFURL = url
                 }
             }
         }
@@ -55,5 +74,14 @@ struct AddExpenseView: View {
 }
 
 #Preview {
-    AddExpenseView()
+    do {
+        // 1. Create an in-memory model container for preview
+        let container = try ModelContainer(for: Statement.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        
+        // 2. Inject the context into your view
+        return AddExpenseView(modelContext: container.mainContext)
+    } catch {
+        // 3. Show fallback if container fails
+        return Text("Failed to create preview: \(error.localizedDescription)")
+    }
 }
