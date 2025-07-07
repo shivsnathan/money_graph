@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct Money_GraphApp: App {
@@ -13,5 +14,6 @@ struct Money_GraphApp: App {
         WindowGroup {
             HomeView()
         }
+        .modelContainer(for: Statement.self)
     }
 }
