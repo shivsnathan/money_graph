@@ -12,6 +12,8 @@ struct HomeView: View {
     @State private var showAddExpenseSheet = false
     @Environment(\.modelContext) private var modelContext
     @StateObject private var viewModel = HomeViewModel()
+    @State private var selectedStatement: Statement? = nil
+    @State private var navigateToExpense = false
 
     @Query(sort: \Statement.createdAt, order: .reverse) var statements: [Statement]
 
@@ -22,6 +24,8 @@ struct HomeView: View {
                     VStack(spacing: 20) {
                         Image(systemName: "plus.circle")
                             .font(.system(size: 75))
+                            .symbolEffect(.bounce.up.byLayer,
+                                          options: .nonRepeating)
                             .foregroundStyle(.green)
                             .onTapGesture {
                                 showAddExpenseSheet = true
@@ -33,8 +37,18 @@ struct HomeView: View {
                         }
                     }
                 } else {
-                    StatementListView { statement in
-                       
+                    StatementListView(
+                        onTap: { statement in
+                            selectedStatement = statement
+                            navigateToExpense = true
+                        },
+                        onDelete: { statement in
+                            viewModel.delete(statement, context: modelContext)
+                        })
+                    .navigationDestination(isPresented: $navigateToExpense) {
+                        if let statement = selectedStatement {
+                            ExpenseView(viewModel: ExpenseViewModel(statement: statement))
+                        }
                     }
                 }
 

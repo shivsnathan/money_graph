@@ -12,5 +12,9 @@ import CoreML
 
 @MainActor
 class HomeViewModel: ObservableObject {
+    func delete(_ statement: Statement, context: ModelContext) {
+        context.delete(statement)
+        try? context.save()
+    }
 }
 

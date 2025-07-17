@@ -12,6 +12,7 @@ struct StatementListView: View {
     @Query(sort: \Statement.createdAt, order: .reverse) var statements: [Statement]
 
     var onTap: (Statement) -> Void
+    var onDelete: (Statement) -> Void
 
     var body: some View {
         List {
@@ -31,14 +32,24 @@ struct StatementListView: View {
                     onTap(statement)
                 }
             }
+            .onDelete { offsets in
+                for index in offsets {
+                    let statement = statements[index]
+                    onDelete(statement)
+                }
+            }
         }
         .listStyle(.plain)
     }
 }
 
 #Preview("StatementListView Preview") {
-    StatementListView(onTap: { statement in
+    StatementListView(
+        onTap: { statement in
             print("Tapped on: \(statement.cardName)")
+        },
+        onDelete: { offsets in
+            print("Deleted")
         }
     )
 }
