@@ -9,13 +9,13 @@ import SwiftUI
 
 struct ExpenseView: View {
     @StateObject var viewModel: ExpenseViewModel
-
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Prediction Result:")
                 .font(.title2)
                 .bold()
-
+            
             if viewModel.predictionResult.isEmpty {
                 Text("Analyzing...")
                     .foregroundColor(.gray)
@@ -24,12 +24,15 @@ struct ExpenseView: View {
                     Text("• \(category)")
                 }
             }
-
+            
             Spacer()
         }
         .padding()
         .navigationTitle("Expense Analysis")
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            await viewModel.analyzeStatementPDF()
+        }
     }
 }
 

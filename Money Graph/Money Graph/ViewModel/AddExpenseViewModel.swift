@@ -30,7 +30,9 @@ class AddExpenseViewModel: ObservableObject {
 
     func saveStatement() {
         guard let url = selectedPDFURL else { return }
-        let statement = Statement(cardName: cardName, bankName: bankName, fileURL: url)
+        let statement = Statement(cardName: cardName,
+                                  bankName: bankName,
+                                  fileURL: url)
         modelContext.insert(statement)
         clearForm()
     }
